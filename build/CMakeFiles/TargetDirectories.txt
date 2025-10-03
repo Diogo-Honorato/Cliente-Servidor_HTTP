@@ -1,3 +1,0 @@
-/home/diogo/Documentos/uni/ES/Engenharia_de_Software/back-end/build/CMakeFiles/tp.dir
-/home/diogo/Documentos/uni/ES/Engenharia_de_Software/back-end/build/CMakeFiles/edit_cache.dir
-/home/diogo/Documentos/uni/ES/Engenharia_de_Software/back-end/build/CMakeFiles/rebuild_cache.dir

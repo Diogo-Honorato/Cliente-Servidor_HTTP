@@ -1,4 +1,4 @@
-#include "../include/server.hpp"
+#include "../include/server.h"
 
 int startServer(Server *server){
 
@@ -43,21 +43,15 @@ void waitConnection(Server *server){
     }
 }
 
-int cmds(std::string &cmd, Server *server){
+int cmds(char *cmd, Server *server){
 
 	if((cmd == END)){
 
 		server->run = 0;
 
-		std::cout << "THE SERVER IS NOT ACCEPTING ANY MORE CONNECTIONS\n";
+		printf("THE SERVER IS NOT ACCEPTING ANY MORE CONNECTIONS\n");
 
         close(server->server_fd);
-
-        return 0;
-	}
-	else if(cmd == ONLINE){
-	
-        std::cout << server->online << " \033[32mONLINE\033[0m\n";
 
         return 0;
 	}
