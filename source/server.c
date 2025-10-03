@@ -5,41 +5,40 @@ int startServer(Server *server){
     server->server_fd = socket(AF_INET,SOCK_STREAM,0);
 
     server->addr.sin_family = AF_INET;  //IPv4
-    server->addr.sin_port = htons(PORT_SERVER);
-    server->addr.sin_addr.s_addr = inet_addr(IP_SERVER);
+    server->addr.sin_port = htons(server.PORT_SERVER);
+    server->addr.sin_addr.s_addr = inet_addr(aerver.IP_SERVER);
 
     if(bind(server->server_fd,(struct sockaddr*)&server->addr,sizeof(server->addr)) < 0){
 
-        std::cerr << "ERROR::bind()::";
+        printf("ERROR::bind()::");
         return -1;
     }
 
     if(listen(server->server_fd,LISTEN_QUEUE) == -1){
 
-        std::cerr << "ERROR::listen()::";
+        printf("ERROR::listen()::");
         return -1;
     }
 
     server->run = 1;
-    server->online = 0;
 
     return 0;
 }
 
 void waitConnection(Server *server){
 
-    int client_fd;
-
     while(server->run){
-        
+        int client_fd;
+
         if((client_fd = accept(server->server_fd,NULL,NULL)) < 0){
 
-            std::cerr << "ERROR::accept()\n";
+            printf("ERROR::accept()\n");
             continue;
         }
-        
-        std::thread(response,client_fd).detach();
 
+        pthread_t client;
+        pthread_create(&client,NULL,response,(void*)&client_fd);
+        ptthread_detach(&client);
     }
 }
 
