@@ -5,8 +5,8 @@ int startServer(Server *server){
     server->server_fd = socket(AF_INET,SOCK_STREAM,0);
 
     server->addr.sin_family = AF_INET;  //IPv4
-    server->addr.sin_port = htons(server.PORT_SERVER);
-    server->addr.sin_addr.s_addr = inet_addr(aerver.IP_SERVER);
+    server->addr.sin_port = htons(server->PORT_SERVER);
+    server->addr.sin_addr.s_addr = inet_addr(server->IP_SERVER);
 
     if(bind(server->server_fd,(struct sockaddr*)&server->addr,sizeof(server->addr)) < 0){
 

@@ -1,87 +1,87 @@
-#include "../include/handleHTTP.hpp"
+#include "../include/handleHTTP.h"
 
-std::string readHttpRequest(int client_fd){
+char *readHttpRequest(int client_fd)
+{
 
-    std::string request;
+    char *request;
     char buffer[MAX_BUFFER];
 
-    while (true)
+    ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer), 0);
+
+    if (bytes_received < 0)
     {
-
-        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer), 0);
-
-        if (bytes_received < 0)
-        {
-            std::cerr << "ERROR::recv()\n";
-            return "";
-        }
-        if (bytes_received == 0)
-        {
-
-            break;
-        }
-
-        request.append(buffer, bytes_received);
-
-        if (request.find("\r\n\r\n") != std::string::npos)
-        {
-            break;
-        }
+        perror("ERROR::recv()\n");
+        return "";
     }
+
+    request = calloc(bytes_received, sizeof(char));
+
+    strncpy(request, buffer, bytes_received + 1);
 
     return request;
 }
 
-std::string readFile(const char *PATH, int client_fd)
+char *readFile(const char *PATH, int client_fd)
 {
-    std::string response;
-    std::stringstream buffer;
-    std::streamsize readBytes;
-    char *error_404 = ERROR_404;
+    char *response;
+    char *buffer;
+    size_t file_size;
 
-    std::ifstream file(PATH);
+    FILE *file = fopen(PATH, "r");
 
-    if (!file.is_open()){
+    if (file == NULL)
+    {
 
-        std::cerr << "ERROR::FAILED TO OPEN FILE\n";
-        send(client_fd, error_404, sizeof(ERROR_404), 0);
-        return "";
+        perror("ERROR::FAILED TO OPEN FILE\n");
+        send(client_fd, ERROR_404, sizeof(ERROR_404), 0);
+        return ERROR_404;
     }
 
-    buffer << file.rdbuf();
+    fseek(file, 0L, SEEK_END);
+    file_size = ftell(file);
+    fseek(file, 0L, SEEK_SET);
 
-    readBytes = file.gcount();
+    //talvez pode dar segmentation fault
+    fgets(buffer, file_size, file);
 
-    file.close();
+    fclose(file);
 
-    response = HEAD_HTML + std::to_string(readBytes) + "\n\n" + buffer.str();
+    //As próximas linhas arriscado lotar memoria
+    char *num;
+    size_t tam_str = sprintf(num,"%d",file_size);
+    response = calloc((strlen(HEAD_HTML) + tam_str + 3 + file_size), sizeof(char)); // 3 = '\n\n' + /0
+
+    sprintf(response, "%s%d\n\n%s", HEAD_HTML, file_size, buffer);
 
     return response;
 }
 
 void response(int client_fd)
 {
-    std::string http_response;
-    std::string method;
-    std::string url;
-    std::string path(PATH_HTML);
+    char *http_response;
+    char *method;
+    char *url;
+    const char *path = PATH_HTML;
 
-    std::string http_request(readHttpRequest(client_fd));
+    char *http_request = readHttpRequest(client_fd);
 
-    if (http_request.empty())
+    if (http_request == NULL)
     {
         close(client_fd);
         return;
     }
 
-    std::istringstream iss(http_request);
-    iss >> method >> url;
+    method = strtok(http_request," ");
+    url = strtok(NULL," ");
 
-    path.append(url);
+    strcat(path,url);//Concatena o caminho para o html
 
-    http_request = readFile(path.c_str(),client_fd);
+    http_response = readFile(path, client_fd);
 
-    send(client_fd, http_response.c_str(), http_response.size(), 0);
+    send(client_fd, http_response, strlen(http_response)+1, 0);
 
     close(client_fd);
+
+    free(http_request);
+    free(http_response);
 }
