@@ -1,31 +1,30 @@
-CXX = gcc
-CXXFLAGS = -Wall -Wextra -O2 -g
+COMPILADORC = gcc
+COMPILADOR_FLAGS = -Wall -Wextra -O2 -g
 LDFLAGS = -pthread
+EXT = .c
 
 SRC_DIR = source
 HEADER_DIRS = include
 BIN_DIR = bin
 OBJ_DIR = objects
+TARGET = main
 
 INCLUDES = $(foreach dir, $(HEADER_DIRS), -I$(dir))
 
-SRCS = $(shell find $(SRC_DIR) -type f -name '*.cpp')
-OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
-
-TARGET = main
-
+SRCS = $(shell find $(SRC_DIR) -type f -name '*$(EXT)')
+OBJS = $(patsubst $(SRC_DIR)/%$(EXT), $(OBJ_DIR)/%.o, $(SRCS))
 
 
 all: $(BIN_DIR)/$(TARGET)
 
 $(BIN_DIR)/$(TARGET): $(OBJS)
 	@mkdir -p $(@D)
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
+	@$(COMPILADORC) $(COMPILADOR_FLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%$(EXT)
 	@mkdir -p $(@D)
 	@echo $<
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@$(COMPILADORC) $(COMPILADOR_FLAGS) $(INCLUDES) -c $< -o $@
 
 $(BIN_DIR):
 	@mkdir -p $(BIN_DIR)
@@ -37,7 +36,7 @@ clean:
 	@rm -rf $(BIN_DIR) $(OBJ_DIR)
 
 run: all
-	@$(BIN_DIR)/$(TARGET)
+	@$(BIN_DIR)/$(TARGET) $(ARGS)
 
 .PRECIOUS: $(OBJS)
 .PHONY: all clean run

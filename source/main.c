@@ -3,7 +3,7 @@
 int main(int argc, char *argv[]){
 
     Server server;
-    char *cmd;
+    char *cmd = malloc(5);
 
     if(argc == 3){
 		server.IP_SERVER = argv[1];
@@ -26,28 +26,34 @@ int main(int argc, char *argv[]){
 
         close(server.server_fd);
 
-        return -1;
+        exit(EXIT_FAILURE);
     }
-
-    printf("SERVER STARTED\nIP:PORT %s:%d\n", server.IP_SERVER,server.PORT_SERVER);
 
     //creating thread to accept new users
     pthread_t connection_th;
     
-    pthread_create(&connection_th,NULL,waitConnection,(void*)&server);
+    pthread_create(&connection_th,NULL,(void*)waitConnection,(void*)&server);
     pthread_detach(connection_th);
+
+    if(system("clear") != 0){
+        perror("ERROR SYSTEM\n");
+    }
+
+    CONFIGS(server.IP_SERVER,server.PORT_SERVER);
 
     //server commands
     while(server.run){
 
-		scanf("%s", cmd);
+        printf(">> ");
 
-        if(cmds(cmd,&server) == -1){
+		if(scanf("%4s", cmd) > 0){
 
-            printf("COMMAND NOT FOUND\n");
+            if(cmds(cmd,&server) == -1){
+
+                printf("[COMMAND NOT FOUND]\n\n");
+            }
         }
-		
-		fflush(stdin);
+        flush();
 	}
 
     printf("SERVER OFFLINE\n");

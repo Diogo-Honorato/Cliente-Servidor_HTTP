@@ -8,7 +8,9 @@
 #define LISTEN_QUEUE 10
 
 #define END "/end"
-#define ONLINE "/online"
+#define CLEAR "/cls"
+
+#define CONFIGS(IP,PORT) printf("SERVER STARTED\nIP:PORT = %s:%d\n\n", IP,PORT)
 
 typedef struct{
 
@@ -20,6 +22,9 @@ typedef struct{
     int PORT_SERVER;
 
 }Server;
+
+//clean buffer stdin
+void flush();
 
 //start the server structures and configure the socket
 int startServer(Server *server);

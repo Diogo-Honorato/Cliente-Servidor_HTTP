@@ -42,26 +42,29 @@ char *readFile(const char *PATH, int client_fd)
     fseek(file, 0L, SEEK_SET);
 
     //talvez pode dar segmentation fault
-    fgets(buffer, file_size, file);
+    if(fgets(buffer, file_size, file) == NULL){
+        return NULL;
+    }
 
     fclose(file);
 
     //As próximas linhas arriscado lotar memoria
     char *num;
-    size_t tam_str = sprintf(num,"%d",file_size);
+    size_t tam_str = sprintf(num,"%ld",file_size);
     response = calloc((strlen(HEAD_HTML) + tam_str + 3 + file_size), sizeof(char)); // 3 = '\n\n' + /0
 
-    sprintf(response, "%s%d\n\n%s", HEAD_HTML, file_size, buffer);
+    sprintf(response, "%s%ld\n\n%s", HEAD_HTML, file_size, buffer);
 
     return response;
 }
 
-void response(int client_fd)
-{
+void response(int *client_id)
+{   
+    int client_fd = (int)*client_id;
+
     char *http_response;
-    char *method;
     char *url;
-    const char *path = PATH_HTML;
+    char *path = PATH_HTML;
 
     char *http_request = readHttpRequest(client_fd);
 
@@ -71,7 +74,7 @@ void response(int client_fd)
         return;
     }
 
-    method = strtok(http_request," ");
+    strtok(http_request," ");//Metodo(GET,POST,etc...)
     url = strtok(NULL," ");
 
     strcat(path,url);//Concatena o caminho para o html

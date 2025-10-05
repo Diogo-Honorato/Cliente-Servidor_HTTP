@@ -1,5 +1,12 @@
 #include "../include/server.h"
 
+void flush() {
+    int ctr;
+    do {
+        ctr = fgetc(stdin);
+    } while (ctr != EOF && ctr != '\n');
+}
+
 int startServer(Server *server){
 
     server->server_fd = socket(AF_INET,SOCK_STREAM,0);
@@ -25,8 +32,10 @@ int startServer(Server *server){
     return 0;
 }
 
-void waitConnection(Server *server){
+void waitConnection(Server *s){
 
+    Server *server = (Server*)s;
+    
     while(server->run){
         int client_fd;
 
@@ -37,14 +46,14 @@ void waitConnection(Server *server){
         }
 
         pthread_t client;
-        pthread_create(&client,NULL,response,(void*)&client_fd);
-        ptthread_detach(&client);
+        pthread_create(&client,NULL,(void*)response,(void*)&client_fd);
+        pthread_detach(client);
     }
 }
 
 int cmds(char *cmd, Server *server){
 
-	if((cmd == END)){
+	if(strcmp(cmd,END) == 0){
 
 		server->run = 0;
 
@@ -54,6 +63,16 @@ int cmds(char *cmd, Server *server){
 
         return 0;
 	}
+    else if(strcmp(cmd,CLEAR) == 0){
+
+        if(system("clear") != 0){
+            perror("ERROR SYSTEM\n");
+        }
+
+        CONFIGS(server->IP_SERVER,server->PORT_SERVER);
+
+        return 0;
+    }
 
     return -1;
 }
