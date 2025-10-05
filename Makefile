@@ -1,5 +1,5 @@
 COMPILADORC = gcc
-COMPILADOR_FLAGS = -Wall -Wextra -O2 -g
+COMPILADOR_FLAGS =-Wall -Wextra -O2 -g
 LDFLAGS = -pthread
 EXT = .c
 
@@ -31,6 +31,12 @@ $(BIN_DIR):
 
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
+
+gdb:
+	@gdb $(BIN_DIR)/$(TARGET) $(ARGS)
+
+leak:
+	@valgrind --leak-check=full $(BIN_DIR)/$(TARGET) $(ARGS) 
 
 clean:
 	@rm -rf $(BIN_DIR) $(OBJ_DIR)

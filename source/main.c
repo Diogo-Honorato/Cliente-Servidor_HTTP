@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 
     if(startServer(&server) == -1){
 
-        perror("startServer()\n");
+        perror("startServer()");
 
         close(server.server_fd);
 
@@ -57,6 +57,7 @@ int main(int argc, char *argv[]){
 	}
 
     printf("SERVER OFFLINE\n");
-
+    free(cmd);
+    
     return 0;
 }
