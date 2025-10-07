@@ -1,5 +1,16 @@
 #include "../include/handleHTTP.h"
 
+/*
+TODO:
+
+[]mimeType.
+[]ReadFiles.
+
+*/ 
+void *mimeType(char *url){
+
+}
+
 char *readHttpRequest(int client_fd)
 {
     char *request;

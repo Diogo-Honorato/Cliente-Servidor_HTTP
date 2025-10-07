@@ -1,28 +1,12 @@
 # Back-end
 
-Servidor HTTP básico
+Servidor HTTP básico que apenas fornece um arquivo(png , jpg, txt, html, css, json)
 
-## Comandos CMAKE
+## Comandos MAKE
 
-Todos os comandos serão feitos a partir do diretório `back-end`:
-
-
-Compilar: `cmake --build build`
+Compilar: `make`
 
 
-Executar: `./build/bin/tp`
+Executar em local host: `make run`
 
-
-### Atualizar o CMake
-
-Caso exista adicione um novo arquivo fonte(.cpp) ao projeto executar o comando:
-
-```
-cd build
-cmake ..
-```
-
-### Observação Importante: 
-Se você executar o programa diretamente a partir do caminho `./build/bin/tp` (ou similar), lembre-se de que **os caminhos de arquivos usados dentro do código serão relativos à pasta atual de execução**.  
-
-Isso significa que, ao usar caminhos relativos (como `../data/arquivo.txt`), o programa irá procurar a partir da pasta `build/bin/`  **e não da raiz do projeto**.
+Executar em algum IP:PORT : `make run ARGS="IP PORT"`
