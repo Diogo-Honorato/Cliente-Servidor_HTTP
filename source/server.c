@@ -48,7 +48,6 @@ void waitConnection(Server *s){
         pthread_t client;
         pthread_create(&client,NULL,(void*)response,(void*)&client_fd);
         pthread_detach(client);
-        printf("Client:[%d] inciou sessão\n",client_fd);
     }
 }
 

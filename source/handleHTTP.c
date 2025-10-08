@@ -3,12 +3,38 @@
 /*
 TODO:
 
-[]mimeType.
+[V]mimeType.
 []ReadFiles.
 
-*/ 
-void *mimeType(char *url){
+*/
 
+const char *ext[] = {"txt","html","css","gif","jpeg","png","jpg"};
+const char *cont_types[] = {"text/plain","text/html","text/css","image/gif","image/jpeg","image/png","image/jpg"};
+
+const char *mimeType(char *url){
+
+    char *extension;
+    char *temp = strtok(url,".");
+
+    while(temp != NULL){ 
+    
+        extension = temp;
+        temp = strtok(NULL,".");
+    }
+
+
+    //Não e escalável mas quebra um galho por enquanto
+    int tam = sizeof(ext)/8;
+
+    for(int i = 0; i < tam; i++){
+
+        if(strcmp(ext[i],extension) == 0){
+
+            return cont_types[i];
+        }
+    }
+
+    return NULL;
 }
 
 char *readHttpRequest(int client_fd)
@@ -127,5 +153,4 @@ void response(int *client_id)
     free(http_request);
     free(http_response);
     free(path);
-    printf("Client:[%d] encerrou sessão\n",client_fd);
 }

@@ -17,5 +17,4 @@ char * readHttpRequest(int client_fd);
 char * readFile(const char *PATH);
 void response(int *client_fd);
 
-
 #endif
