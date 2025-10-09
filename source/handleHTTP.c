@@ -1,19 +1,12 @@
 #include "../include/handleHTTP.h"
 
-/*
-TODO:
-
-[V]mimeType.
-[]ReadFiles.
-
-*/
-
 const char *ext[] = {"txt","html","css","gif","jpeg","png","jpg"};
 const char *cont_types[] = {"text/plain","text/html","text/css","image/gif","image/jpeg","image/png","image/jpg"};
 
+
 const char *mimeType(char *url){
 
-    char *extension;
+    char *extension = NULL;
     char *temp = strtok(url,".");
 
     while(temp != NULL){ 
@@ -22,11 +15,10 @@ const char *mimeType(char *url){
         temp = strtok(NULL,".");
     }
 
-
+    int tam_ext = sizeof(ext)/sizeof(ext[0]);
+    
     //Não e escalável mas quebra um galho por enquanto
-    int tam = sizeof(ext)/8;
-
-    for(int i = 0; i < tam; i++){
+    for(int i = 0; i < tam_ext; i++){
 
         if(strcmp(ext[i],extension) == 0){
 
@@ -59,32 +51,38 @@ char *readHttpRequest(int client_fd)
     return request;
 }
 
-char *readFile(const char *PATH)
-{
-    char *response;
-    char *buffer;
-    char *head_html = HEAD_HTML;
-    size_t content_lenght;
+char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const char* ctn_type, size_t ctn_length,const char *body){
+    
+    size_t len_resp = snprintf(NULL,0,"HTTP/1.1 %hu %s\nContent-Type: %s\nContent-Length: %lu\n\n%s",status,MSG_STATUS,ctn_type,ctn_length,body) + 1; //+1 = '\0'
+    
+    char *response = calloc(len_resp, sizeof(char));
 
-    FILE *file = fopen(PATH, "rb");
+    snprintf(response,len_resp,"HTTP/1.1 %hu %s\nContent-Type: %s\nContent-Length: %lu\n\n%s",status,MSG_STATUS,ctn_type,ctn_length,body);
+
+    return response;
+}
+
+char *readFiles(char *url)
+{
+    char *buffer;
+    size_t size_file;
+
+    FILE *file = fopen(url, "rb");
 
     if (file == NULL)
-    {
-        perror("ERROR::FAILED TO OPEN FILE");
-        response = malloc(strlen(ERROR_404)+1);
-        sprintf(response,ERROR_404);
-
-        return response;
+    {   
+        perror("ERROR::readFiles()::");
+        return NULL;
     }
 
 
     fseek(file, 0L, SEEK_END);
-    content_lenght = ftell(file);
+    size_file = ftell(file);
     fseek(file, 0L, SEEK_SET);
 
-    buffer = calloc(content_lenght,sizeof(char));
+    buffer = calloc(size_file,sizeof(char));
 
-    if(fread(buffer,1,content_lenght,file) != content_lenght){
+    if(fread(buffer,1,size_file,file) != size_file){
 
         if (ferror(file)) {
             perror("Error reading file");
@@ -100,29 +98,16 @@ char *readFile(const char *PATH)
 
     fclose(file);
 
-    char temp[7];
-    size_t str_tam = snprintf(temp,7,"%ld",content_lenght);
-    int size_resp = strlen(head_html) + str_tam + 2 + content_lenght + 1;// 2 => '\n\n' 1=>'\0'
-    
-    response = calloc(size_resp, sizeof(char));
-
-    //Gerando o Response completo
-    snprintf(response,size_resp,"%s%ld\n\n%s",head_html, content_lenght, buffer);
-
-    free(buffer);
-
-    return response;
+    return buffer;
 }
 
 void response(int *client_id)
 {   
     int client_fd = (int)*client_id;
 
-    const char * path_html = PATH_HTML;
     char *http_response;
+    char *body;
     char *url;
-    char *path;
-    int len_path;
 
     //Aguarda e processa o request do client
     char *http_request = readHttpRequest(client_fd);
@@ -133,24 +118,24 @@ void response(int *client_id)
         return;
     }
 
-    //gerando tokens para pegar a url
+    //gerando tokens para extrair a url
     strtok(http_request," ");//Metodo(GET,POST,etc...)
     url = strtok(NULL," ");
+    
+    //Procura e retorna o arquivo se nao encontrar retorna 'not found'
+    if((body = readFiles(url)) != NULL){
 
-    //Concatena o caminho para o html
-    len_path = strlen(PATH_HTML) + strlen(url) + 1;
-    path = malloc(len_path);
-    snprintf(path,len_path,"%s%s",path_html,url);
+        http_response = buildResponseHttp(STATUS_OK,"OK",mimeType(url),strlen(body),body);
+    }
+    else{
 
-
-    //Procura e envia o .html
-    http_response = readFile(path);
-
+        http_response = buildResponseHttp(STATUS_NOT_FOUND,"Not Found","text/html",strlen("<h1>404 Not Found</h1>"),"<h1>404 Not Found</h1>");        
+    }
 
     send(client_fd, http_response, strlen(http_response)+1, 0);
 
     close(client_fd);
     free(http_request);
     free(http_response);
-    free(path);
+    free(body);
 }
