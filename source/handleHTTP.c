@@ -54,7 +54,7 @@ char *readHttpRequest(int client_fd)
 char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const char* ctn_type, size_t ctn_length,const char *body){
     
     size_t len_resp = snprintf(NULL,0,"HTTP/1.1 %hu %s\nContent-Type: %s\nContent-Length: %lu\n\n%s",status,MSG_STATUS,ctn_type,ctn_length,body) + 1; //+1 = '\0'
-    
+
     char *response = calloc(len_resp, sizeof(char));
 
     snprintf(response,len_resp,"HTTP/1.1 %hu %s\nContent-Type: %s\nContent-Length: %lu\n\n%s",status,MSG_STATUS,ctn_type,ctn_length,body);
@@ -64,6 +64,7 @@ char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const ch
 
 char *readFiles(char *url)
 {
+    printf("url: %s\n",url);
     char *buffer;
     size_t size_file;
 
@@ -71,10 +72,9 @@ char *readFiles(char *url)
 
     if (file == NULL)
     {   
-        perror("ERROR::readFiles()::");
+        perror("ERROR::readFiles()");
         return NULL;
     }
-
 
     fseek(file, 0L, SEEK_END);
     size_file = ftell(file);
@@ -120,8 +120,9 @@ void response(int *client_id)
 
     //gerando tokens para extrair a url
     strtok(http_request," ");//Metodo(GET,POST,etc...)
-    url = strtok(NULL," ");
-    
+    url = strtok(NULL," ") + 1;//evita a leitura da '/' movendo o ponteiro para o proximo endereço
+
+
     //Procura e retorna o arquivo se nao encontrar retorna 'not found'
     if((body = readFiles(url)) != NULL){
 
