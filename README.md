@@ -1,12 +1,17 @@
-# Back-end
+# Cliente-Servidor HTTP Básico em C
 
-Servidor HTTP básico que apenas fornece um arquivo(png , jpg, txt, html, css, json)
+Este projeto implementa uma aplicação básica Cliente-Servidor utilizando o protocolo HTTP em C. O cliente solicita um arquivo de uma URL e o servidor fornece esse arquivo para o cliente fazer o download.
 
-## Comandos MAKE
+>[Servidor](Server/README.md): O servidor HTTP escuta requisições em uma porta específica e, ao receber uma requisição com o caminho de um arquivo, ele retorna o conteúdo do arquivo ou um erro caso o arquivo não seja encontrado.
 
-Compilar: `make`
+>[Cliente](Client/README.md): O cliente faz uma requisição HTTP para o servidor, solicitando um arquivo através de uma URL. O arquivo é então baixado para o diretório local especificado.
 
+## Requisitos
 
-Executar em local host: `make run`
+- Sistema Operacional: Linux/Unix com suporte a compilação C.
 
-Executar em algum IP:PORT : `make run ARGS="IP PORT"`
+- Compilador: GCC ou qualquer compilador C compatível.
+
+- Ferramenta de Build: make (opcional, mas recomendado para facilitar a compilação).
+
+- Bibliotecas: Nenhuma biblioteca externa necessária além das bibliotecas padrão.

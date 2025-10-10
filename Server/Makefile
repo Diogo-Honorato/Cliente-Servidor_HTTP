@@ -8,7 +8,7 @@ SRC_DIR = source
 HEADER_DIRS = include
 BIN_DIR = bin
 OBJ_DIR = objects
-TARGET = main
+TARGET = server
 
 INCLUDES = $(foreach dir, $(HEADER_DIRS), -I$(dir))
 
