@@ -46,14 +46,14 @@ char *readHttpRequest(int client_fd)
 
     request = calloc(bytes_received+1, sizeof(char));
 
-    snprintf(request, bytes_received, "%s",buffer);
+    snprintf(request, bytes_received+1, "%s",buffer);
 
     return request;
 }
 
 char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const char* ctn_type, size_t ctn_length,const char *body){
     
-    size_t len_resp = snprintf(NULL,0,"HTTP/1.1 %hu %s\nContent-Type: %s\nContent-Length: %lu\n\n%s",status,MSG_STATUS,ctn_type,ctn_length,body) + 1; //+1 = '\0'
+    size_t len_resp = snprintf(NULL,0,"HTTP/1.1 %hu %s\nContent-Type: %s\nContent-Length: %lu\n\n%s",status,MSG_STATUS,ctn_type,ctn_length,body) + 1; //+1 para o '\0'
 
     char *response = calloc(len_resp, sizeof(char));
 
@@ -64,7 +64,6 @@ char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const ch
 
 char *readFiles(char *url)
 {
-    printf("url: %s\n",url);
     char *buffer;
     size_t size_file;
 
@@ -80,7 +79,7 @@ char *readFiles(char *url)
     size_file = ftell(file);
     fseek(file, 0L, SEEK_SET);
 
-    buffer = calloc(size_file,sizeof(char));
+    buffer = calloc(size_file+1,sizeof(char));
 
     if(fread(buffer,1,size_file,file) != size_file){
 

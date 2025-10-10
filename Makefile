@@ -1,5 +1,6 @@
 COMPILADORC = gcc
-COMPILADOR_FLAGS =-Wall -Wextra -O2 -g
+COMPILADOR_FLAGS = -Wall -Wextra -O2 -g
+SANITIZE_FLAGS = -fsanitize=address
 LDFLAGS = -pthread
 EXT = .c
 
@@ -14,6 +15,10 @@ INCLUDES = $(foreach dir, $(HEADER_DIRS), -I$(dir))
 SRCS = $(shell find $(SRC_DIR) -type f -name '*$(EXT)')
 OBJS = $(patsubst $(SRC_DIR)/%$(EXT), $(OBJ_DIR)/%.o, $(SRCS))
 
+
+ifeq ($(SANITIZE), 1)
+    COMPILADOR_FLAGS += $(SANITIZE_FLAGS)
+endif
 
 all: $(BIN_DIR)/$(TARGET)
 
@@ -32,11 +37,12 @@ $(BIN_DIR):
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
-gdb:
-	@gdb $(BIN_DIR)/$(TARGET) $(ARGS)
 
-leak:
+valgrind:
 	@valgrind --leak-check=full $(BIN_DIR)/$(TARGET) $(ARGS) 
+
+sanitize:
+	@$(MAKE) SANITIZE=1
 
 clean:
 	@rm -rf $(BIN_DIR) $(OBJ_DIR)
@@ -44,5 +50,6 @@ clean:
 run: all
 	@$(BIN_DIR)/$(TARGET) $(ARGS)
 
+
 .PRECIOUS: $(OBJS)
-.PHONY: all clean run
+.PHONY: all valgrind sanitize clean run
