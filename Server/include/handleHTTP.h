@@ -1,5 +1,5 @@
-#ifndef HANDLEHTTP_HPP
-#define HANDLEHTTP_HPP
+#ifndef HANDLEHTTP_H
+#define HANDLEHTTP_H
 
 #include <string.h>
 #include <stdbool.h>

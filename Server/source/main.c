@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
 		server.PORT_SERVER = 2569;
 	}
 	else{
-		perror("ERROR AND EXPECTED 2 ARGS\n");
+		printf("ERROR AND EXPECTED 2 ARGS\nEx.: 'IP PORT'");
 		exit(EXIT_FAILURE);
 	}
 
