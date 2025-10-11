@@ -16,10 +16,10 @@ void startClient(Client *c){
     c->run = true;
 }
 
-int connectToServer(Client *c, char* IP_SERVER, uint16_t *PORT_SERVER){
+int connectToServer(Client *c){
 
-    c->addr.sin_addr.s_addr = inet_addr(IP_SERVER);
-    c->addr.sin_port = htons(*PORT_SERVER);
+    c->addr.sin_addr.s_addr = inet_addr(c->IP_SERVER);
+    c->addr.sin_port = htons(c->PORT_SERVER);
 
     int status = -1;
 

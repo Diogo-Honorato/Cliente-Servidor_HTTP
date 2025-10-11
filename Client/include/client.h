@@ -13,14 +13,20 @@ da main() para MAX_URL - 1*/
 
 typedef struct
 {
-    int client_fd;
     bool run;
+    
+    int client_fd;
     struct sockaddr_in addr;
+
+    char *IP_SERVER;
+    uint16_t PORT_SERVER;
+
+    char* route;
     
 }Client;
 
 void flush();
 void startClient(Client *c);
-int connectToServer(Client *c, char* IP_SERVER, uint16_t *PORT_SERVER);
+int connectToServer(Client *c);
 
 #endif
