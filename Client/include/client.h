@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*Se modificar o MAX_URL lembre-se de alterar o limite do <scanf("% 'MAX_URL-1' s",url)>
 da main() para MAX_URL - 1*/
@@ -14,7 +15,7 @@ da main() para MAX_URL - 1*/
 typedef struct
 {
     bool run;
-    
+
     int client_fd;
     struct sockaddr_in addr;
 
@@ -28,5 +29,6 @@ typedef struct
 void flush();
 void startClient(Client *c);
 int connectToServer(Client *c);
+void parseUrl(Client *c,char *url);
 
 #endif

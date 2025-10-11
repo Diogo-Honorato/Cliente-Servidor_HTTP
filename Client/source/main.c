@@ -14,9 +14,7 @@ int main()
 
         if(scanf("%90s",url) > 0){
 
-            //adiconar comandos no cliente?
-
-            //void parseUrl(Client *c) fazer alguma funçao de parsing para pegar o IP:PORT e o caminho
+            parseUrl(&client,url);
 
             if (connectToServer(&client) == -1){
 

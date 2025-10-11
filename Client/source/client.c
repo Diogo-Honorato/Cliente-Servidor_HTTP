@@ -16,6 +16,18 @@ void startClient(Client *c){
     c->run = true;
 }
 
+void parseUrl(Client *c, char *url){
+
+    //http://000.000.000.000:00000/home/user/documentos/
+
+    strtok(url,":"); //'http'
+    c->IP_SERVER = strtok(NULL,":") + 2;// '//000.000.000.000' + 2 = '000.000.000.000'
+    c->PORT_SERVER = (uint16_t)strtoul(strtok(NULL,"/"),NULL,10); // '00000'
+    c->route = (strtok(NULL,"") - 1);
+    *c->route = '/';  // '/home/user/documentos/'
+    
+}
+
 int connectToServer(Client *c){
 
     c->addr.sin_addr.s_addr = inet_addr(c->IP_SERVER);
