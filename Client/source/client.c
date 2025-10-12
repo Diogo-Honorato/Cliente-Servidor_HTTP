@@ -7,6 +7,28 @@ void flush() {
     } while (ctr != EOF && ctr != '\n');
 }
 
+int cmds(char *cmd, Client *c){
+
+	if(strcmp(cmd,END) == 0){
+
+		c->run = 0;
+
+        close(c->client_fd);
+
+        return 0;
+	}
+    else if(strcmp(cmd,CLEAR) == 0){
+
+        if(system("clear") != 0){
+            perror("\n[ERROR SYSTEM]\n\n");
+        }
+
+        return 0;
+    }
+
+    return -1;
+}
+
 void startClient(Client *c){
 
     c->client_fd = socket(AF_INET,SOCK_STREAM,0);

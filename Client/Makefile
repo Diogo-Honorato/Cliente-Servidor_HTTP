@@ -39,7 +39,7 @@ $(OBJ_DIR):
 
 
 valgrind:
-	@valgrind --leak-check=full $(BIN_DIR)/$(TARGET) $(ARGS) 
+	@valgrind --leak-check=full $(BIN_DIR)/$(TARGET) 
 
 sanitize:
 	@$(MAKE) SANITIZE=1
@@ -48,7 +48,7 @@ clean:
 	@rm -rf $(BIN_DIR) $(OBJ_DIR)
 
 run: all
-	@$(BIN_DIR)/$(TARGET) $(ARGS)
+	@$(BIN_DIR)/$(TARGET)
 
 
 .PRECIOUS: $(OBJS)

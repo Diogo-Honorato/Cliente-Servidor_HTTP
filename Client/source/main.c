@@ -14,11 +14,22 @@ int main()
 
         if(scanf("%90s",url) > 0){
 
+            if(url[0] == '/'){
+
+                if(cmds(url,&client) == -1){
+            
+                    printf("\n[COMMAND NOT FOUND]\n\n");
+                }
+
+                flush();
+                continue;
+            }
+
             parseUrl(&client,url);
 
             if (connectToServer(&client) == -1){
 
-                printf("TIME OUT::COULD NOT CONNECT TO THE SERVER\n");
+                printf("\n[TIME OUT::COULD NOT CONNECT TO THE SERVER]\n\n");
             }
             else{
 
@@ -29,7 +40,7 @@ int main()
         flush();
     }
 
-    printf("CLIENT OFFLINE\n");
+    printf("\n[CLOSED CLIENT]\n\n");
 
     return 0;
 }
