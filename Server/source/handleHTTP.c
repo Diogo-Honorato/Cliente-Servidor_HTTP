@@ -4,10 +4,10 @@ const char *ext[] = {"txt","html","css","gif","jpeg","png","jpg"};
 const char *cont_types[] = {"text/plain","text/html","text/css","image/gif","image/jpeg","image/png","image/jpg"};
 
 
-const char *mimeType(char *url){
+const char *mimeType(char *route){
 
     char *extension = NULL;
-    char *temp = strtok(url,".");
+    char *temp = strtok(route,".");
 
     while(temp != NULL){ 
     
@@ -62,12 +62,12 @@ char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const ch
     return response;
 }
 
-char *readFiles(char *url)
+char *readFiles(char *route)
 {
     char *buffer;
     size_t size_file;
 
-    FILE *file = fopen(url, "rb");
+    FILE *file = fopen(route, "rb");
 
     if (file == NULL)
     {   
@@ -106,7 +106,7 @@ void response(int *client_id)
 
     char *http_response;
     char *body;
-    char *url;
+    char *route;
 
     //Aguarda e processa o request do client
     char *http_request = readHttpRequest(client_fd);
@@ -117,15 +117,15 @@ void response(int *client_id)
         return;
     }
 
-    //gerando tokens para extrair a url
+    //gerando tokens para extrair a route
     strtok(http_request," ");//Metodo(GET,POST,etc...)
-    url = strtok(NULL," ") + 1;//evita a leitura da '/' movendo o ponteiro para o proximo endereço
+    route = strtok(NULL," ") + 1;//evita a leitura da '/' movendo o ponteiro para o proximo endereço
 
 
     //Procura e retorna o arquivo se nao encontrar retorna 'not found'
-    if((body = readFiles(url)) != NULL){
+    if((body = readFiles(route)) != NULL){
 
-        http_response = buildResponseHttp(STATUS_OK,"OK",mimeType(url),strlen(body),body);
+        http_response = buildResponseHttp(STATUS_OK,"OK",mimeType(route),strlen(body),body);
     }
     else{
 

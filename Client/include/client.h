@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 
 /*Se modificar o MAX_URL lembre-se de alterar o limite do <scanf("% 'MAX_URL-1' s",url)>
 da main() para MAX_URL - 1*/
@@ -30,7 +31,9 @@ typedef struct
 void flush();
 int cmds(char *cmd, Client *c);
 void startClient(Client *c);
+void freeRgx(int total);
 int connectToServer(Client *c);
-void parseUrl(Client *c,char *url);
+int parseUrl(Client *c,char *uri);
+char* createRequest(char* uri);
 
 #endif

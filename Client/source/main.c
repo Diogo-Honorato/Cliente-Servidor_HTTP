@@ -3,7 +3,7 @@
 int main()
 {
     Client client;
-    char url[MAX_URL];
+    char uri[MAX_URL];
  
 
     startClient(&client);
@@ -12,11 +12,11 @@ int main()
     {   
         printf(">> ");
 
-        if(scanf("%90s",url) > 0){
+        if(scanf("%90s",uri) > 0){
 
-            if(url[0] == '/'){
+            if(uri[0] == '/'){
 
-                if(cmds(url,&client) == -1){
+                if(cmds(uri,&client) == -1){
             
                     printf("\n[COMMAND NOT FOUND]\n\n");
                 }
@@ -25,7 +25,10 @@ int main()
                 continue;
             }
 
-            parseUrl(&client,url);
+            if(parseUrl(&client,uri)){
+                flush();
+                continue;
+            }
 
             if (connectToServer(&client) == -1){
 
@@ -33,7 +36,7 @@ int main()
             }
             else{
 
-                //Logica para enviar os requests e receber os responses
+                //char* createRequest(char* uri);
             }
 
         }

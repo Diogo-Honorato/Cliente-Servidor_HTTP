@@ -42,6 +42,7 @@ valgrind:
 	@valgrind --leak-check=full $(BIN_DIR)/$(TARGET) 
 
 sanitize:
+	@rm -rf $(BIN_DIR) $(OBJ_DIR)
 	@$(MAKE) SANITIZE=1
 
 clean:
