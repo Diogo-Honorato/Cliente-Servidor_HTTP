@@ -66,7 +66,7 @@ int parseUrl(Client *c, char *uri)
     if (reti == 0)
     {
         // tokenização
-        //  http://000.000.000.000:00000/home/user/documentos/
+        //  http://000.000.000.000:00000/home/user/documentos/imagem.png
 
         strtok(uri, ":");                                                //'http'
         c->IP_SERVER = strtok(NULL, ":") + 2;                            // '//000.000.000.000' + 2 = '000.000.000.000'
@@ -133,14 +133,6 @@ char *createRequest(char *path)
 
 int download(int client_fd, char *path)
 {
-    FILE *output = fopen(path,"wb");
-
-    if (output == NULL)
-    {   
-        perror("\nERROR download():");
-        return 1;
-    }
-
     char *buffer = calloc(SIZE_BUFFER,sizeof(char));
 
     ssize_t recv_bytes = recv(client_fd, buffer, SIZE_BUFFER, 0);
@@ -148,7 +140,6 @@ int download(int client_fd, char *path)
     if (recv_bytes < 0)
     {
         printf("\n[ERROR FAILED TO RECEIVE DATA]\n\n");
-        fclose(output);
         free(buffer);
         return 1;
     }
@@ -159,12 +150,39 @@ int download(int client_fd, char *path)
     if(strcmp(strtok(NULL," "),"404") == 0){
 
         printf("\n[ERROR 404 NOT FOUND]\n\n");
-        fclose(output);
         free(buffer);
         return 1;
     }
 
-    fwrite(ptr_ctn,sizeof(char),recv_bytes-((ptr_ctn - buffer)+2),output);
+    
+    
+    //encontra o nome do arquivo na URI e realiza o download
+    FILE *output;
+    char *file_name = NULL;
+    char *temp = strtok(path,"/");
+
+    while(temp != NULL){ 
+    
+        file_name = temp;
+        temp = strtok(NULL,"/");
+    }
+
+    int8_t  size_path_local = 10+strlen(file_name);//download/\0 =>10 ctrs
+
+    char path_local[size_path_local];
+
+    snprintf(path_local,size_path_local,"download/%s",file_name);
+
+    output = fopen(path_local,"wb");
+
+    if (output == NULL)
+    {   
+        perror("\nERROR download():");
+        free(buffer);
+        return 1;
+    }
+
+    fwrite(ptr_ctn,sizeof(char),recv_bytes-((ptr_ctn - buffer)+1),output);
 
     //verifica se tem mais bytes a serem recebidos
     while (true)

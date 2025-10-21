@@ -41,13 +41,7 @@ int main()
                 
                 if(send(client.client_fd,request,strlen(request)+1,MSG_NOSIGNAL) != -1){
 
-                    flush();
-                    printf("\n[ENTER THE SAVE LOCATION ALONG WITH THE NAME OF YOUR CHOICE AND ITS EXTENSION]\n\n$ ");
-
-                    if(scanf("%90s",uri) > 0){
-
-                        download(client.client_fd,uri) == 0 ? printf("\n[FILE SAVED IN PATH: %s]\n\n",uri) : printf("\n[ERROR DOWNLOADING]\n\n");
-                    }
+                    download(client.client_fd,client.route) == 0 ? printf("\n[FILE SAVED IN PATH: download]\n\n") : printf("\n[ERROR DOWNLOADING]\n\n");
                 }
                 else{
 
