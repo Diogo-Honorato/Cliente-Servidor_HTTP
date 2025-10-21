@@ -11,6 +11,7 @@
 /*Se modificar o MAX_URL lembre-se de alterar o limite do <scanf("% 'MAX_URL-1' s",url)>
 da main() para MAX_URL - 1*/
 #define MAX_URL 91
+#define SIZE_BUFFER 2500001 //20Mbps + '\0'
 #define END "/end"
 #define CLEAR "/cls"
 
@@ -31,9 +32,9 @@ typedef struct
 void flush();
 int cmds(char *cmd, Client *c);
 void startClient(Client *c);
-void freeRgx(int total);
-int connectToServer(Client *c);
+int connectServer(Client *c);
 int parseUrl(Client *c,char *uri);
 char* createRequest(char* uri);
+int download(int client_fd,char *path);
 
 #endif

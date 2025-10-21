@@ -4,7 +4,7 @@ int main()
 {
     Client client;
     char uri[MAX_URL];
- 
+    char *request = NULL;
 
     startClient(&client);
 
@@ -30,20 +30,39 @@ int main()
                 continue;
             }
 
-            if (connectToServer(&client) == -1){
+            if (connectServer(&client) == -1){
 
                 printf("\n[TIME OUT::COULD NOT CONNECT TO THE SERVER]\n\n");
+                close(client.client_fd);
             }
             else{
 
-                //char* createRequest(char* uri);
+                request = createRequest(client.route);
+                
+                if(send(client.client_fd,request,strlen(request)+1,MSG_NOSIGNAL) != -1){
+
+                    flush();
+                    printf("\n[ENTER THE SAVE LOCATION ALONG WITH THE NAME OF YOUR CHOICE AND ITS EXTENSION]\n\n$ ");
+
+                    if(scanf("%90s",uri) > 0){
+
+                        download(client.client_fd,uri) == 0 ? printf("\n[FILE SAVED IN PATH: %s]\n\n",uri) : printf("\n[ERROR DOWNLOADING]\n\n");
+                    }
+                }
+                else{
+
+                    printf("\n[ERROR SENDING REQUEST]\n\n");
+                }
+
+                free(request);
+                close(client.client_fd);
             }
 
         }
         flush();
     }
 
-    printf("\n[CLOSED CLIENT]\n\n");
+    printf("\n[CLOSED BROWSER]\n\n");
 
     return 0;
 }
