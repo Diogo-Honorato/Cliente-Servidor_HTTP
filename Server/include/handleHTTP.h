@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include "libSockets.h"
 
@@ -13,7 +15,7 @@
 #define STATUS_OK 200
 #define STATUS_NOT_FOUND 404
 
-
+char *listDirectory(const char *path);
 char *readHttpRequest(int client_fd);
 char *buildResponseHttp(unsigned short status, const char * MSG_STATUS, const char* ctn_type, size_t ctn_length,const char *body);
 char *readFiles(char *url);

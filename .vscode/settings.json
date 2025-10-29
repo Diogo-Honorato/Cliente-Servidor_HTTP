@@ -1,6 +1,11 @@
 {
     "files.associations": {
         "client.h": "c",
-        "libsockets.h": "c"
+        "libsockets.h": "c",
+        "netdb.h": "c",
+        "socket.h": "c",
+        "in.h": "c",
+        "stdlib.h": "c",
+        "inet.h": "c"
     }
 }

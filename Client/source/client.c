@@ -1,55 +1,10 @@
 #include "../include/client.h"
 
-const char *pattern = "^(https?:\\/\\/)([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})(:[0-9]{1,5})(\\/.*[^\\/])$";
-const char *nameRgx[] = {"PROTOCOL", "IP", "PORT", "PATH"};
+int parseDNS(Client *c, char *uri){
 
-void flush()
-{
-    int ctr;
-    do
-    {
-        ctr = fgetc(stdin);
-    } while (ctr != EOF && ctr != '\n');
-}
-
-int cmds(char *cmd, Client *c)
-{
-    if (strcmp(cmd, END) == 0)
-    {
-
-        c->run = 0;
-
-        close(c->client_fd);
-
-        return 0;
-    }
-    else if (strcmp(cmd, CLEAR) == 0)
-    {
-
-        if (system("clear") != 0)
-        {
-            perror("\n[ERROR SYSTEM]\n\n");
-        }
-
-        return 0;
-    }
-
-    return -1;
-}
-
-void startClient(Client *c)
-{
-    c->addr.sin_family = AF_INET; // IPv4
-
-    c->run = true;
-}
-
-int parseUrl(Client *c, char *uri)
-{
-    int reti = 0;
     regex_t rgxs;
-    regmatch_t pmatch[5];
-    int nmatchs = 5;
+    int reti = 0;
+    const char *pattern = "^https?:\\/\\/(www\\.)[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9@:%._+~#?&\\/=]*)$";
 
     // validando uri com regex para a tokenização
     if ((regcomp(&rgxs, pattern, REG_EXTENDED)) != 0)
@@ -61,18 +16,114 @@ int parseUrl(Client *c, char *uri)
         return 1;
     }
 
-    reti = regexec(&rgxs, uri, nmatchs, pmatch, 0);
+    reti = regexec(&rgxs, uri, 0, NULL, 0);
+
+    if (reti == 0)
+    {
+        // tokenização
+        //  http://www.site.com/home/user/documentos/imagem.png
+
+        char *ptr_host = strstr(uri, "://");
+        ptr_host += 3;
+        ptr_host = strchr(ptr_host, '/');
+
+        if(ptr_host == NULL || *(ptr_host + 1) == '\0'){
+
+            strtok(uri, "/");                                             //'http:'
+            c->DNS = strtok(NULL, "/");                                   // 'www.site.com'
+            c->route = "/";
+
+        }else{
+
+            strtok(uri, "/");                                             //'http:'
+            c->DNS = strtok(NULL, "/");                                  // 'www.site.com'
+            c->route = (strtok(NULL, "") - 1);
+            *c->route = '/'; // '/home/user/documentos/imagem.png'
+        }
+
+        regfree(&rgxs);
+
+
+        //Conecta com Server DNS e pega o IP e PORT do Dominio correspondent
+
+        c->IP_SERVER = getIPDNS(c->DNS);
+
+        if(c->IP_SERVER == (in_addr_t)-1){
+
+            return 1;
+        }
+
+        if (strstr(uri, "https:")){
+
+            c->PORT_SERVER = 443;
+
+        }else {
+            c->PORT_SERVER = 80;
+        }
+
+    }
+    else if (reti == REG_NOMATCH)
+    {
+
+        printf("\n[ERROR URI ENTERED INCORRECTLY]\n\n");
+        regfree(&rgxs);
+        return 1;
+    }
+    else
+    {
+        char msgbuf[100];
+        regerror(reti, &rgxs, msgbuf, sizeof(msgbuf));
+        printf("\n[CRITICAL ERROR IN REGEXEC: %s]\n\n", msgbuf);
+        regfree(&rgxs);
+        return 1;
+    }
+
+    return 0;
+    
+}
+
+int parseIpPort(Client *c, char *uri){
+
+    int reti = 0;
+    regex_t rgxs;
+    const char *pattern = "^(https?:\\/\\/)([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})(:[0-9]{1,5})(\\/.*)$";
+
+    // validando uri com regex para a tokenização
+    if ((regcomp(&rgxs, pattern, REG_EXTENDED)) != 0)
+    {
+        char msgbuf[100];
+        regerror(reti, &rgxs, msgbuf, sizeof(msgbuf));
+        printf("\n[ERROR COMPILING REGEX FOR: %s]\n\n", msgbuf);
+        regfree(&rgxs);
+        return 1;
+    }
+
+    reti = regexec(&rgxs, uri, 0, NULL, 0);
 
     if (reti == 0)
     {
         // tokenização
         //  http://000.000.000.000:00000/home/user/documentos/imagem.png
 
-        strtok(uri, ":");                                                //'http'
-        c->IP_SERVER = strtok(NULL, ":") + 2;                            // '//000.000.000.000' + 2 = '000.000.000.000'
-        c->PORT_SERVER = (uint16_t)strtoul(strtok(NULL, "/"), NULL, 10); // '00000'
-        c->route = (strtok(NULL, "") - 1);
-        *c->route = '/'; // '/home/user/documentos/'
+        char *ptr_host = strstr(uri, "://");
+        ptr_host += 3;
+        ptr_host = strchr(ptr_host, '/');
+
+        if(*(ptr_host + 1) == '\0'){
+
+            strtok(uri, ":");                                                //'http'
+            c->IP_SERVER = inet_addr(strtok(NULL, ":") + 2);                 // '//000.000.000.000' + 2 = '000.000.000.000'
+            c->PORT_SERVER = (uint16_t)strtoul(strtok(NULL, "/"), NULL, 10); // '00000'
+            c->route = "/";
+
+        }else{
+
+            strtok(uri, ":");                                                //'http'
+            c->IP_SERVER = inet_addr(strtok(NULL, ":") + 2);                 // '//000.000.000.000' + 2 = '000.000.000.000'
+            c->PORT_SERVER = (uint16_t)strtoul(strtok(NULL, "/"), NULL, 10); // '00000'
+            c->route = (strtok(NULL, "") - 1);
+            *c->route = '/'; // '/home/user/documentos/'
+        }
 
         regfree(&rgxs);
     }
@@ -93,15 +144,40 @@ int parseUrl(Client *c, char *uri)
     }
 
     return 0;
+    
+}
+
+int parseURI(Client *c, char *uri)
+{   
+    uint8_t option = 0;
+
+    if(strstr(uri,"www")){
+        option = 1;
+    }
+
+    switch (option)
+    {
+    case 0:
+        return parseIpPort(c,uri);
+
+    case 1:
+        return parseDNS(c,uri);
+
+    default:
+        break;
+    }
+
+    return 1;
 }
 
 int connectServer(Client *c)
 {
-    c->client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    c->client_fd = socket(AF_INET, SOCK_STREAM,0);
 
-    c->addr.sin_addr.s_addr = inet_addr(c->IP_SERVER);
+    c->addr.sin_family = AF_INET; // IPv4
+    c->addr.sin_addr.s_addr = c->IP_SERVER;
     c->addr.sin_port = htons(c->PORT_SERVER);
-
+    
     int status = -1;
 
     for (int i = 0; i < 6 && status == -1; i++)
@@ -137,9 +213,9 @@ int download(int client_fd, char *path)
 
     ssize_t recv_bytes = recv(client_fd, buffer, SIZE_BUFFER, 0);
 
-    if (recv_bytes < 0)
+    if (recv_bytes <= 0)
     {
-        printf("\n[ERROR FAILED TO RECEIVE DATA]\n\n");
+        printf("\n[FAILED TO RECEIVE DATA]\n\n");
         free(buffer);
         return 1;
     }
@@ -159,13 +235,22 @@ int download(int client_fd, char *path)
     //encontra o nome do arquivo na URI e realiza o download
     FILE *output;
     char *file_name = NULL;
-    char *temp = strtok(path,"/");
-
-    while(temp != NULL){ 
     
-        file_name = temp;
-        temp = strtok(NULL,"/");
+    if(strlen(path) == 1)
+    {
+        file_name = "index.html";
     }
+    else{
+
+        char *temp = strtok(path,"/");
+
+        while(temp != NULL){ 
+    
+            file_name = temp;
+            temp = strtok(NULL,"/");
+        }
+    }
+   
 
     int8_t  size_path_local = 10+strlen(file_name);//download/\0 =>10 ctrs
 

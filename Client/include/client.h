@@ -2,6 +2,7 @@
 #define CLIENT_H
 
 #include "libSockets.h"
+#include "DNS.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,23 +18,22 @@ da main() para MAX_URL - 1*/
 
 typedef struct
 {
-    bool run;
-
     int client_fd;
     struct sockaddr_in addr;
 
-    char *IP_SERVER;
+    in_addr_t IP_SERVER;
     uint16_t PORT_SERVER;
+
+    char* DNS;
 
     char* route;
     
 }Client;
 
-void flush();
-int cmds(char *cmd, Client *c);
-void startClient(Client *c);
+int parseDNS(Client *c,char *uri);
+int parseIpPort(Client *c,char *uri);
+int parseURI(Client *c,char *uri);
 int connectServer(Client *c);
-int parseUrl(Client *c,char *uri);
 char* createRequest(char* uri);
 int download(int client_fd,char *path);
 

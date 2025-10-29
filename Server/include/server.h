@@ -9,6 +9,7 @@
 
 #define END "/end"
 #define CLEAR "/cls"
+#define PATH_SERVER "dir/"
 
 #define CONFIGS(IP,PORT) printf("SERVER STARTED\nIP:PORT = %s:%d\n\n", IP,PORT)
 

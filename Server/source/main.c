@@ -5,19 +5,19 @@ int main(int argc, char *argv[]){
     Server server;
     char *cmd = malloc(5);
 
-    if(argc == 3){
-		server.IP_SERVER = argv[1];
-		server.PORT_SERVER = atoi(argv[2]);
-	}
-	else if(argc == 1){
-        //if you do not define anything, local host will be defined
-		server.IP_SERVER = "127.0.0.1";
-		server.PORT_SERVER = 2569;
-	}
-	else{
-		printf("ERROR AND EXPECTED 2 ARGS\nEx.: 'IP PORT'");
-		exit(EXIT_FAILURE);
-	}
+    if (argc == 3) {
+        server.IP_SERVER = argv[1];
+        server.PORT_SERVER = atoi(argv[2]);
+    }
+    else if (argc == 2) {
+        server.IP_SERVER = "127.0.0.1";
+        server.PORT_SERVER = 2569;
+    }
+    else {
+        printf("USAGE: %s <IP> <PORT>\n",argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
 
 
     if(startServer(&server) == -1){
@@ -58,6 +58,6 @@ int main(int argc, char *argv[]){
 
     printf("SERVER OFFLINE\n");
     free(cmd);
-    
+
     return 0;
 }
