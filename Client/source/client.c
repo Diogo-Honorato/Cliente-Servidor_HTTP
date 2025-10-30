@@ -197,20 +197,20 @@ int connectServer(Client *c)
 
 char *createRequest(char *path)
 {
+    const char *template = "GET %s HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
 
-    size_t len_req = snprintf(NULL, 0, "GET %s HTTP/1.1", path);
-
+    size_t len_req = snprintf(NULL, 0, template, path);
     char *buffer = calloc(len_req + 1, sizeof(char));
 
-    snprintf(buffer, len_req + 1, "GET %s HTTP/1.1", path);
+    snprintf(buffer, len_req + 1, template, path);
 
     return buffer;
 }
 
+
 int download(int client_fd, char *path)
 {
-    char *buffer = calloc(SIZE_BUFFER,sizeof(char));
-
+    char *buffer = calloc(SIZE_BUFFER, sizeof(char));
     ssize_t recv_bytes = recv(client_fd, buffer, SIZE_BUFFER, 0);
 
     if (recv_bytes <= 0)
@@ -219,67 +219,67 @@ int download(int client_fd, char *path)
         free(buffer);
         return 1;
     }
-    
-    char *ptr_ctn = strstr(buffer,"\n\n") + 2;
 
-    strtok(buffer," ");
-    if(strcmp(strtok(NULL," "),"404") == 0){
+    char *ptr_ctn = strstr(buffer, "\r\n\r\n");
+    if (!ptr_ctn)
+    {
+        printf("\n[ERROR PARSING RESPONSE BODY]\n\n");
+        free(buffer);
+        return 1;
+    }
+    ptr_ctn += 4;
 
+
+    if (strstr(buffer, "404 Not Found"))
+    {
         printf("\n[ERROR 404 NOT FOUND]\n\n");
         free(buffer);
         return 1;
     }
 
-    
-    
-    //encontra o nome do arquivo na URI e realiza o download
-    FILE *output;
+
+    char temp_path[strlen(path) + 1];
+    strcpy(temp_path, path);
+
     char *file_name = NULL;
-    
-    if(strlen(path) == 1)
+    if (strlen(path) == 1)
     {
         file_name = "index.html";
     }
-    else{
-
-        char *temp = strtok(path,"/");
-
-        while(temp != NULL){ 
-    
+    else
+    {
+        char *temp = strtok(temp_path, "/");
+        while (temp != NULL)
+        {
             file_name = temp;
-            temp = strtok(NULL,"/");
+            temp = strtok(NULL, "/");
         }
     }
-   
 
-    int8_t  size_path_local = 10+strlen(file_name);//download/\0 =>10 ctrs
 
-    char path_local[size_path_local];
+    char path_local[512];
+    snprintf(path_local, sizeof(path_local), "download/%s", file_name);
 
-    snprintf(path_local,size_path_local,"download/%s",file_name);
-
-    output = fopen(path_local,"wb");
-
+    FILE *output = fopen(path_local, "wb");
     if (output == NULL)
-    {   
+    {
         perror("\nERROR download():");
         free(buffer);
         return 1;
     }
 
-    fwrite(ptr_ctn,sizeof(char),recv_bytes-((ptr_ctn - buffer)+1),output);
 
-    //verifica se tem mais bytes a serem recebidos
+    size_t header_size = ptr_ctn - buffer;
+    fwrite(ptr_ctn, 1, recv_bytes - header_size, output);
+
+
     while (true)
     {
-        ssize_t recv_bytes = recv(client_fd, buffer, SIZE_BUFFER, 0);
-
-        if (recv_bytes == 0)
-        {
+        recv_bytes = recv(client_fd, buffer, SIZE_BUFFER, 0);
+        if (recv_bytes <= 0)
             break;
-        }
 
-        fwrite(buffer,sizeof(char),recv_bytes,output);
+        fwrite(buffer, 1, recv_bytes, output);
     }
 
     fclose(output);

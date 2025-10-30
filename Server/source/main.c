@@ -9,7 +9,7 @@ int main(int argc, char *argv[]){
         server.IP_SERVER = argv[1];
         server.PORT_SERVER = atoi(argv[2]);
     }
-    else if (argc == 2) {
+    else if (argc == 1) {
         server.IP_SERVER = "127.0.0.1";
         server.PORT_SERVER = 2569;
     }
