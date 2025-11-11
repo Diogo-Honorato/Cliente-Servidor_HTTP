@@ -1,7 +1,7 @@
 #include "../include/handleHTTP.h"
 
-const char *ext[] = {"txt", "html", "css", "gif", "jpeg", "png", "jpg"};
-const char *cont_types[] = {"text/plain", "text/html", "text/css", "image/gif", "image/jpeg", "image/png", "image/jpg"};
+const char *ext[] = {"txt", "html", "css", "gif", "jpeg", "png", "jpg","mp4","pdf"};
+const char *cont_types[] = {"text/plain", "text/html", "text/css", "image/gif", "image/jpeg", "image/png", "image/jpg","video/mp4","application/pdf"};
 
 char *listDirectory(const char *path)
 {
@@ -16,7 +16,7 @@ char *listDirectory(const char *path)
     struct dirent *entry;
     size_t size = 1024;
     char *html = calloc(size, sizeof(char));
-    snprintf(html, size, "<html><body><h1>Index of %s</h1><ul>", path);
+    snprintf(html, size, "<html><body><h1>%s</h1><ul>", path);
 
     while ((entry = readdir(dir)) != NULL)
     {
@@ -154,12 +154,23 @@ void response(int *client_id)
     if (!http_request || strlen(http_request) == 0)
     {
         close(client_fd);
+        free(http_request);
         return;
     }
 
     strtok(http_request, " "); // método
     char *url = strtok(NULL, " ");
-    if (!url) {url = "/";}
+    if (!url) {
+        url = "/";
+    }
+    if(strstr(url,"..")){
+
+        const char *err = "<h1>403 Forbidden Access</h1>";
+        char *http_response = buildResponseHttp(403, "Forbidden", "text/html", strlen(err), err);
+        send(client_fd, http_response, strlen(http_response), 0);
+        free(http_response);
+        return;
+    }
 
     char route[512];
     snprintf(route, sizeof(route), "./root%s", url);

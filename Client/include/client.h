@@ -35,6 +35,7 @@ int parseIpPort(Client *c,char *uri);
 int parseURI(Client *c,char *uri);
 int connectServer(Client *c);
 char* createRequest(char* uri);
+uint16_t logStatusCodeHttp(char *header);
 int download(int client_fd,char *path);
 
 #endif

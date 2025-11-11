@@ -1,6 +1,7 @@
 #include "../include/client.h"
 
-int parseDNS(Client *c, char *uri){
+int parseDNS(Client *c, char *uri)
+{
 
     regex_t rgxs;
     int reti = 0;
@@ -27,40 +28,43 @@ int parseDNS(Client *c, char *uri){
         ptr_host += 3;
         ptr_host = strchr(ptr_host, '/');
 
-        if(ptr_host == NULL || *(ptr_host + 1) == '\0'){
+        if (ptr_host == NULL || *(ptr_host + 1) == '\0')
+        {
 
-            strtok(uri, "/");                                             //'http:'
-            c->DNS = strtok(NULL, "/");                                   // 'www.site.com'
+            strtok(uri, "/");           //'http:'
+            c->DNS = strtok(NULL, "/"); // 'www.site.com'
             c->route = "/";
+        }
+        else
+        {
 
-        }else{
-
-            strtok(uri, "/");                                             //'http:'
-            c->DNS = strtok(NULL, "/");                                  // 'www.site.com'
+            strtok(uri, "/");           //'http:'
+            c->DNS = strtok(NULL, "/"); // 'www.site.com'
             c->route = (strtok(NULL, "") - 1);
             *c->route = '/'; // '/home/user/documentos/imagem.png'
         }
 
         regfree(&rgxs);
 
-
-        //Conecta com Server DNS e pega o IP e PORT do Dominio correspondent
+        // Conecta com Server DNS e pega o IP e PORT do Dominio correspondent
 
         c->IP_SERVER = getIPDNS(c->DNS);
 
-        if(c->IP_SERVER == (in_addr_t)-1){
+        if (c->IP_SERVER == (in_addr_t)-1)
+        {
 
             return 1;
         }
 
-        if (strstr(uri, "https:")){
+        if (strstr(uri, "https:"))
+        {
 
             c->PORT_SERVER = 443;
-
-        }else {
+        }
+        else
+        {
             c->PORT_SERVER = 80;
         }
-
     }
     else if (reti == REG_NOMATCH)
     {
@@ -79,10 +83,10 @@ int parseDNS(Client *c, char *uri){
     }
 
     return 0;
-    
 }
 
-int parseIpPort(Client *c, char *uri){
+int parseIpPort(Client *c, char *uri)
+{
 
     int reti = 0;
     regex_t rgxs;
@@ -109,14 +113,16 @@ int parseIpPort(Client *c, char *uri){
         ptr_host += 3;
         ptr_host = strchr(ptr_host, '/');
 
-        if(*(ptr_host + 1) == '\0'){
+        if (*(ptr_host + 1) == '\0')
+        {
 
             strtok(uri, ":");                                                //'http'
             c->IP_SERVER = inet_addr(strtok(NULL, ":") + 2);                 // '//000.000.000.000' + 2 = '000.000.000.000'
             c->PORT_SERVER = (uint16_t)strtoul(strtok(NULL, "/"), NULL, 10); // '00000'
             c->route = "/";
-
-        }else{
+        }
+        else
+        {
 
             strtok(uri, ":");                                                //'http'
             c->IP_SERVER = inet_addr(strtok(NULL, ":") + 2);                 // '//000.000.000.000' + 2 = '000.000.000.000'
@@ -144,26 +150,40 @@ int parseIpPort(Client *c, char *uri){
     }
 
     return 0;
-    
 }
 
 int parseURI(Client *c, char *uri)
-{   
-    uint8_t option = 0;
+{
+    uint8_t option = 2;
+    char *ptr = NULL;
 
-    if(strstr(uri,"www")){
+    if (strstr(uri, "www"))
+    {
         option = 1;
     }
+    else if((ptr = strstr(uri,"localhost")) != NULL){
+        
+        char *localhost = "127.0.0.1";
+
+        for(int i = 0; i < 9; i++){
+
+            ptr[i] = localhost[i];
+        }
+
+        option = 0;
+    }
+
 
     switch (option)
     {
     case 0:
-        return parseIpPort(c,uri);
+        return parseIpPort(c, uri);
 
     case 1:
-        return parseDNS(c,uri);
+        return parseDNS(c, uri);
 
     default:
+        printf("\n[ERROR URI ENTERED INCORRECTLY]\n\n");
         break;
     }
 
@@ -172,12 +192,12 @@ int parseURI(Client *c, char *uri)
 
 int connectServer(Client *c)
 {
-    c->client_fd = socket(AF_INET, SOCK_STREAM,0);
+    c->client_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     c->addr.sin_family = AF_INET; // IPv4
     c->addr.sin_addr.s_addr = c->IP_SERVER;
     c->addr.sin_port = htons(c->PORT_SERVER);
-    
+
     int status = -1;
 
     for (int i = 0; i < 6 && status == -1; i++)
@@ -207,6 +227,26 @@ char *createRequest(char *path)
     return buffer;
 }
 
+//Apenas trata os status code de erro de cliente e servidor entre 400 e 599 do contrario retorna 200
+uint16_t logStatusCodeHttp(char *header){
+    
+    char statusCode[strlen(header) + 1];
+
+    strcpy(statusCode,header);
+    
+    //Extrai o status code
+    strtok(statusCode," ");
+
+    uint16_t status = (uint16_t)strtoul(strtok(NULL," "),NULL, 10); //status code
+
+    if(status >= 400 && status <= 599){
+
+        printf("\n[ERROR %d %s]\n\n",status,strtok(NULL,"\r\n"));
+        return status;
+    }
+
+    return 200;
+}
 
 int download(int client_fd, char *path)
 {
@@ -229,14 +269,12 @@ int download(int client_fd, char *path)
     }
     ptr_ctn += 4;
 
+    //verifica o status code
+    if(logStatusCodeHttp(buffer) != (uint16_t)200){
 
-    if (strstr(buffer, "404 Not Found"))
-    {
-        printf("\n[ERROR 404 NOT FOUND]\n\n");
         free(buffer);
         return 1;
     }
-
 
     char temp_path[strlen(path) + 1];
     strcpy(temp_path, path);
@@ -256,7 +294,6 @@ int download(int client_fd, char *path)
         }
     }
 
-
     char path_local[512];
     snprintf(path_local, sizeof(path_local), "download/%s", file_name);
 
@@ -268,10 +305,8 @@ int download(int client_fd, char *path)
         return 1;
     }
 
-
     size_t header_size = ptr_ctn - buffer;
     fwrite(ptr_ctn, 1, recv_bytes - header_size, output);
-
 
     while (true)
     {
